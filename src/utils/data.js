@@ -2,81 +2,147 @@ export const columns = [
   {
     title: "名称",
     dataIndex: "name",
-    key: "name"
+    key: "name",
   },
   {
     title: "人数",
     dataIndex: "number",
-    key: "number"
-  }
+    key: "number",
+  },
 ];
 
 export const tableData = [
   {
-    parentId: 0,
-    id: 1,
+    parentId: null,
+    id: "0",
     name: "分组1",
     number: "10",
     type: "group",
     children: [
       {
-        parentId: 1,
-        id: 2,
+        parentId: "0",
+        id: "0-0",
         name: "分组1-测试1",
         number: "2",
-        type: "child"
+        type: "child",
+        children: [
+          {
+            parentId: "0-0",
+            id: "0-0-0",
+            name: "0-0-0",
+            number: "2",
+            type: "child",
+            children: [
+              {
+                parentId: "0-0-0",
+                id: "0-0-0-0",
+                name: "0-0-0-0",
+                number: "2",
+                type: "child",
+                isDrag: true,
+              },
+              {
+                parentId: "0-0-0",
+                id: "0-0-0-1",
+                name: "0-0-0-1",
+                number: "2",
+                type: "child",
+                isDrag: true,
+              },
+            ],
+          },
+          {
+            parentId: "0-0",
+            id: "0-0-1",
+            name: "0-0-1",
+            number: "2",
+            type: "child",
+          },
+        ],
       },
       {
-        parentId: 1,
-        id: 3,
+        parentId: "0",
+        id: "0-1",
         name: "分组1-测试2",
         number: "5",
-        type: "child"
+        type: "child",
       },
       {
-        parentId: 1,
-        id: 4,
+        parentId: "0",
+        id: "0-2",
         name: "分组1-测试3",
         number: "3",
-        type: "child"
-      }
-    ]
+        type: "child",
+        children: [
+          {
+            parentId: "0-2",
+            id: "0-2-0",
+            name: "0-2-0",
+            number: "2",
+            type: "child",
+          },
+          {
+            parentId: "0-2",
+            id: "0-2-1",
+            name: "0-2-1",
+            number: "2",
+            type: "child",
+          },
+        ],
+      },
+    ],
   },
   {
-    parentId: 0,
-    id: 5,
+    parentId: null,
+    id: "1",
     name: "分组2",
     number: "3",
     type: "group",
     children: [
       {
-        parentId: 5,
-        id: 6,
+        parentId: "1",
+        id: "1-0",
         name: "分组2-测试1",
         number: "2",
-        type: "child"
+        type: "child",
       },
       {
-        parentId: 5,
-        id: 7,
+        parentId: "1",
+        id: "1-1",
         name: "分组2-测试2",
         number: "1",
-        type: "child"
-      }
-    ]
+        type: "child",
+      },
+    ],
   },
   {
-    parentId: 0,
-    id: 8,
+    parentId: null,
+    id: "2",
     name: "测试child-1",
     number: "3",
-    type: "child"
+    type: "child",
   },
   {
-    parentId: 0,
-    id: 9,
+    parentId: null,
+    id: "3",
     name: "测试child-2",
     number: "2",
-    type: "child"
-  }
+    type: "child",
+    children: [
+      {
+        parentId: "3",
+        id: "3-0",
+        name: "3-0",
+        number: "2",
+        type: "child",
+      },
+      {
+        parentId: "3",
+        id: "3-1",
+        name: "3-1",
+        number: "2",
+        type: "child",
+      },
+    ],
+  },
 ];

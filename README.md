@@ -68,13 +68,13 @@ export const columns = [
   {
     title: "名称",
     dataIndex: "name",
-    key: "name"
+    key: "name",
   },
   {
     title: "人数",
     dataIndex: "number",
-    key: "number"
-  }
+    key: "number",
+  },
 ];
 // 数据
 export const tableData = [
@@ -90,23 +90,23 @@ export const tableData = [
         id: 2,
         name: "分组1-测试1",
         number: "2",
-        type: "child"
+        type: "child",
       },
       {
         parentId: 1,
         id: 3,
         name: "分组1-测试2",
         number: "5",
-        type: "child"
+        type: "child",
       },
       {
         parentId: 1,
         id: 4,
         name: "分组1-测试3",
         number: "3",
-        type: "child"
-      }
-    ]
+        type: "child",
+      },
+    ],
   },
   {
     parentId: 0,
@@ -120,31 +120,31 @@ export const tableData = [
         id: 6,
         name: "分组2-测试1",
         number: "2",
-        type: "child"
+        type: "child",
       },
       {
         parentId: 5,
         id: 7,
         name: "分组2-测试2",
         number: "1",
-        type: "child"
-      }
-    ]
+        type: "child",
+      },
+    ],
   },
   {
     parentId: 0,
     id: 8,
     name: "测试child-1",
     number: "3",
-    type: "child"
+    type: "child",
   },
   {
     parentId: 0,
     id: 9,
     name: "测试child-2",
     number: "2",
-    type: "child"
-  }
+    type: "child",
+  },
 ];
 ```
 
@@ -216,13 +216,13 @@ export const ItemTypes = "DraggableBodyRow";
 export const optionsTyps = {
   didDrop: "didDrop", // 拖拽出区域
   hover: "hover",
-  drop: "drop" // 放置
+  drop: "drop", // 放置
 };
 
 // 数据类型
 export const dataType = {
   group: "group",
-  child: "child"
+  child: "child",
 };
 ```
 
@@ -237,7 +237,7 @@ useDrag 这个方法会返回一些参数：一组收集（collect 函数收集�
 ```js
 const [collected, drag, dragPreview] = useDrag(() => ({
   type,
-  item: { id }
+  item: { id },
 }));
 ```
 
@@ -248,7 +248,7 @@ useDrop 会返回一个数组，包含要放到放置目标的节点和 collect 
 
 ```js
 const [collectedProps, drop] = useDrop(() => ({
-  accept
+  accept,
 }));
 ```
 
@@ -279,7 +279,7 @@ export const DraggableBodyRow = (props) => {
     id: record.id,
     parentId: record.parentId,
     index,
-    isGroup: record.type === dataType.group
+    isGroup: record.type === dataType.group,
   };
 
   let isDrag = true; // 是否可以拖拽，这里所有行均可拖拽，所以没有做判断限制
@@ -294,7 +294,7 @@ export const DraggableBodyRow = (props) => {
         id: dragId,
         parentId: dragParentId,
         index: dragPreIndex,
-        isGroup
+        isGroup,
       } = monitor.getItem() || {}; // 这里获取的数据内容同 itemObj
 
       // 如果拖拽的id和当前行相等则不处理
@@ -320,7 +320,7 @@ export const DraggableBodyRow = (props) => {
       return {
         isOver, // 是否覆盖
         dropClassName: "drop-over-downward", // 拖拽hover时样式
-        handlerId: monitor.getHandlerId()
+        handlerId: monitor.getHandlerId(),
       };
     },
     drop: (item) => {
@@ -330,10 +330,10 @@ export const DraggableBodyRow = (props) => {
         dropId: record.id, // 要放置位置行的id
         dropType: record.type,
         dropParentId: record.parentId,
-        operateType: optionsTyps.drop
+        operateType: optionsTyps.drop,
       };
       moveRow(opt); // 调用传入的方法完成数据修改
-    }
+    },
   });
 
   // useDrag 是hook方法，提供了一种方法让你的组件可以作为拖动源连接到DnD系统。
@@ -343,8 +343,8 @@ export const DraggableBodyRow = (props) => {
     item: itemObj, // 拖动源
     collect: (monitor) => ({
       // 收集器
-      isDragging: monitor.isDragging() // css样式需要
-    })
+      isDragging: monitor.isDragging(), // css样式需要
+    }),
   });
 
   // ref 这样处理可以使得这个组件既可以被拖动也可以接受拖动
@@ -429,7 +429,7 @@ const [{ isDragging }, drag] = useDrag({
   type: ItemTypes,
   item: itemObj,
   collect: (monitor) => ({
-    isDragging: monitor.isDragging()
+    isDragging: monitor.isDragging(),
   }),
   end: (item, monitor) => {
     const { id: droppedId, originalRow } = item;
@@ -443,11 +443,11 @@ const [{ isDragging }, drag] = useDrag({
         dropParentId: originalRow.parentId,
         originalIndex,
         originalParentIndex,
-        operateType: optionsTyps.didDrop
+        operateType: optionsTyps.didDrop,
       };
       moveRow(opt);
     }
-  }
+  },
 });
 ```
 
@@ -616,3 +616,15 @@ const moveRow = useCallback(
 - [React 拖拽排序组件库对比研究](https://zhuanlan.zhihu.com/p/430177180)
 - [拖拽组件 react-dnd 拖动排序的使用](https://juejin.cn/post/6918660279505338381)
 - [react-dnd 用法详解](https://juejin.cn/post/6844903801120358407#heading-18)
+
+1. 规定哪个层级可以拖拽
+
+2. 拖拽行时
+   a. 确定拖拽的是哪个层级
+   b. 确定拖拽行的父级
+   c. 只允许此行在此父级的此层级拖拽，其他层级禁止拖拽
+
+3. 拖拽结束
+   a. 找到拖拽行的层级
+   b. 找到拖拽行的父级
+   c. 将拖拽到的目标位置数据和此拖拽行交互

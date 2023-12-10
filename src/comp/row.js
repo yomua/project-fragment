@@ -16,23 +16,14 @@ export const DraggableBodyRow = (props) => {
 
   if (!record) return null;
 
-  let {
-    row: originalRow,
-    rowIndex: originalIndex,
-    rowParentIndex: originalParentIndex
-  } = findRow(record.id);
-
   let itemObj = {
     id: record.id,
     parentId: record.parentId,
     index,
     isGroup: record.type === dataType.group,
-    originalRow, // 拖拽原始数据
-    originalIndex, // 拖拽原始数据索引
-    originalParentIndex // 拖拽原始数据父节点索引
   };
 
-  let isDrag = true;
+  let isDrag = record.isDrag; // 允许所有行（所有层级）可以拖拽
 
   const ref = useRef();
 
@@ -43,7 +34,7 @@ export const DraggableBodyRow = (props) => {
         id: dragId,
         parentId: dragParentId,
         index: dragPreIndex,
-        isGroup
+        isGroup,
       } = monitor.getItem() || {};
 
       if (dragId === record.id) {
@@ -68,9 +59,10 @@ export const DraggableBodyRow = (props) => {
       return {
         isOver,
         dropClassName: "drop-over-downward",
-        handlerId: monitor.getHandlerId()
+        handlerId: monitor.getHandlerId(),
       };
     },
+    // hover 不影响功能，只是提供一个良好的视觉效果，即：拖拽到目标时，目标会被挤开（下滑或上移）
     hover: (item, monitor) => {
       if (!ref.current) {
         return;
@@ -86,7 +78,7 @@ export const DraggableBodyRow = (props) => {
         dragId: item.id, // 拖拽id
         dropId: record.id, // 要放置位置行的id
         dropParentId: record.parentId,
-        operateType: optionsTyps.hover // hover操作
+        operateType: optionsTyps.hover, // hover操作
       };
 
       // console.log("hover", opt);
@@ -97,42 +89,46 @@ export const DraggableBodyRow = (props) => {
       // to avoid expensive index searches.
       item.index = dropIndex;
     },
-    drop: (item) => {
+    // item: 由 useDrag - item 定义
+    drop: (item, monitor) => {
       let opt = {
-        dragId: item.id, // 拖拽id
-        dropId: record.id, // 要放置位置行的id
-        dropParentId: record.parentId,
-        operateType: optionsTyps.drop
+        dragId: item.id, // 当前正在拖拽行 id
+        dropId: record.id,
+        dropParentId: record.parentId, // 当前拖拽行的父级 id
+        operateType: optionsTyps.drop,
       };
+      console.log("_opt_drop", item.index, index);
+      // debugger
       // console.log('drop', item, opt);
       moveRow(opt);
-    }
+    },
   });
 
   const [{ isDragging }, drag] = useDrag({
     type: ItemTypes,
     item: itemObj,
     collect: (monitor) => ({
-      isDragging: monitor.isDragging()
+      isDragging: monitor.isDragging(),
     }),
-    // canDrag: (props, monitor) => isDrag //parentId不为0的才可以拖拽
-    end: (item, monitor) => {
-      const { id: droppedId, originalRow } = item;
-      const didDrop = monitor.didDrop();
-      // 超出可拖拽区域，需要将拖拽行还原
-      if (!didDrop) {
-        let opt = {
-          dragId: droppedId, // 拖拽id
-          dropId: originalRow.id, // 要放置位置行的id
-          dropParentId: originalRow.parentId,
-          originalIndex,
-          originalParentIndex,
-          operateType: optionsTyps.didDrop
-        };
-        // console.log("useDrag:", opt);
-        moveRow(opt);
-      }
-    }
+    canDrag: (monitor) => {
+      console.log(monitor, itemObj);
+      return record.isDrag;
+    },
+    // 目前可以不需要
+    // end: (item, monitor) => {
+    //   const { id: droppedId, originalRow } = item;
+    //   const didDrop = monitor.didDrop();
+    //   // 超出可拖拽区域，需要将拖拽行还原
+    //   if (!didDrop) {
+    //     let opt = {
+    //       dragId: droppedId, // 拖拽id
+    //       dropId: originalRow.id, // 要放置位置行的id
+    //       dropParentId: originalRow.parentId,
+    //     };
+    //     // console.log("useDrag:", opt);
+    //     moveRow(opt);
+    //   }
+    // },
   });
 
   drop(drag(ref));
