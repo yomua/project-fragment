@@ -2,6 +2,8 @@
 
 基于 antd 树形表格 table 的拖拽排序效果实现
 
+参见：https://github.com/Alisa0026/antd-table_drag-drop-sort
+
 > 版权声明：本文为博主原创文章，未经博主允许不得转载。 欢迎 Issues 留言。
 
 # 一、背景
