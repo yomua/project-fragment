@@ -1,3 +1,9 @@
+# 快速开始
+
+1. `yarn`
+
+2. `yarn start`
+
 # antd-table_drag-drop-sort
 
 基于 antd 树形表格 table 的拖拽排序效果实现
