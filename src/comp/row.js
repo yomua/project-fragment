@@ -16,16 +16,9 @@ export const DraggableBodyRow = (props) => {
 
   if (!record) return null;
 
-  let itemObj = {
-    id: record.id,
-    parentId: record.parentId,
-    index,
-    isGroup: record.type === dataType.group,
-  };
+  let isDrag = true; // 允许所有行（所有层级）可以拖拽
 
-  let isDrag = record.isDrag; // 允许所有行（所有层级）可以拖拽
-
-  const ref = useRef();
+  const rowRef = useRef();
 
   const [{ handlerId, isOver, dropClassName }, drop] = useDrop({
     accept: ItemTypes,
@@ -63,32 +56,32 @@ export const DraggableBodyRow = (props) => {
       };
     },
     // hover 不影响功能，只是提供一个良好的视觉效果，即：拖拽到目标时，目标会被挤开（下滑或上移）
-    hover: (item, monitor) => {
-      if (!ref.current) {
-        return;
-      }
-      const dragIndex = item.index;
-      const dropIndex = index;
-      // Don't replace items with themselves
-      if (dragIndex === dropIndex) {
-        return;
-      }
+    // hover: (item, monitor) => {
+    //   if (!rowRef.current) {
+    //     return;
+    //   }
+    //   const dragIndex = item.index;
+    //   const dropIndex = index;
+    //   // Don't replace items with themselves
+    //   if (dragIndex === dropIndex) {
+    //     return;
+    //   }
 
-      let opt = {
-        dragId: item.id, // 拖拽id
-        dropId: record.id, // 要放置位置行的id
-        dropParentId: record.parentId,
-        operateType: optionsTyps.hover, // hover操作
-      };
+    //   let opt = {
+    //     dragId: item.id, // 拖拽id
+    //     dropId: record.id, // 要放置位置行的id
+    //     dropParentId: record.parentId,
+    //     operateType: optionsTyps.hover, // hover操作
+    //   };
 
-      // console.log("hover", opt);
-      moveRow(opt);
-      // Note: we're mutating the monitor item here!
-      // Generally it's better to avoid mutations,
-      // but it's good here for the sake of performance
-      // to avoid expensive index searches.
-      item.index = dropIndex;
-    },
+    //   // console.log("hover", opt);
+    //   moveRow(opt);
+    //   // Note: we're mutating the monitor item here!
+    //   // Generally it's better to avoid mutations,
+    //   // but it's good here for the sake of performance
+    //   // to avoid expensive index searches.
+    //   item.index = dropIndex;
+    // },
     // item: 由 useDrag - item 定义
     drop: (item, monitor) => {
       let opt = {
@@ -97,22 +90,24 @@ export const DraggableBodyRow = (props) => {
         dropParentId: record.parentId, // 当前拖拽行的父级 id
         operateType: optionsTyps.drop,
       };
-      console.log("_opt_drop", item.index, index);
-      // debugger
-      // console.log('drop', item, opt);
+
       moveRow(opt);
     },
   });
 
   const [{ isDragging }, drag] = useDrag({
     type: ItemTypes,
-    item: itemObj,
+    item: {
+      id: record.id,
+      parentId: record.parentId,
+      index,
+      isGroup: record.type === dataType.group,
+    },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
-    canDrag: (monitor) => {
-      console.log(monitor, itemObj);
-      return record.isDrag;
+    canDrag: () => {
+      return isDrag;
     },
     // 目前可以不需要
     // end: (item, monitor) => {
@@ -131,14 +126,14 @@ export const DraggableBodyRow = (props) => {
     // },
   });
 
-  drop(drag(ref));
+  drop(drag(rowRef));
 
   // 拖拽行的位置显示透明
   const opacity = isDragging ? 0 : 1;
 
   return (
     <tr
-      ref={ref}
+      ref={rowRef}
       className={`${className}
       ${isOver ? dropClassName : ""} 
       ${isDrag ? "can-drag" : ""}`}

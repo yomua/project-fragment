@@ -12,7 +12,7 @@ import {
   dataType,
   optionsTyps,
   findFromData,
-  getFinalUseData,
+  getDragAndDropData,
 } from "./utils/common";
 import { DraggableBodyRow } from "./comp/row";
 
@@ -35,25 +35,26 @@ const App = () => {
     };
   };
 
+  // 拖拽行并释放时触发，用来将拖拽行插入到目标索引
   const moveRow = useCallback(
-    (props) => {
-      let { dragId, dropId, dropParentId } = props;
+    (params) => {
+      let { dragId, dropId, dropParentId } = params;
 
       let {
         dragRow,
         dropRow,
         dragIndex,
         dropIndex,
-        parentItem, // 拖拽那一项的 parent，如果没有 parent, 就为 null
-      } = getFinalUseData(data, dragId, dropId);
+        parentItem, // 拖拽行和要插入位置项的共同  parent，如果没有 parent, 就为 null
+      } = getDragAndDropData(data, dragId, dropId);
 
       // 是否拖拽根部
       let dragIsGroup = !dragRow.parentId;
-      // 是否放置在根部
+      // 是否放置在根部（第一级）
       let dropIsGroup = !dropParentId;
 
       let newData = data;
-      // 根拖拽
+      // 根拖拽（第一级）
       if (dragIsGroup && dropIsGroup) {
         newData = update(data, {
           $splice: [
@@ -64,39 +65,47 @@ const App = () => {
       }
       // 判断拖拽项和放置项是否为同一层级
       else if (dragRow.parentId === dropRow?.parentId) {
-        let newParentItemChildren;
-        // 递归 data children, 找到 parentItem
         if (parentItem) {
-          newParentItemChildren = update(parentItem.children, {
-            $splice: [
-              [dragIndex, 1],
-              [dropIndex, 0, dragRow],
-            ],
+          // 当拖拽结束, 更新正在被拖拽行的父级（直接使用新数据替换旧数据）
+          const newParentItem = update(parentItem, {
+            children: {
+              $splice: [
+                [dragIndex, 1],
+                [dropIndex, 0, dragRow],
+              ],
+            },
           });
 
-          const newParentItem = {
-            ...parentItem,
-            children: newParentItemChildren,
-          };
+          // 更新 dataSource,
+          // 递归 dataSource, 找到 data 中和 parentItem.id 相同的项, 然后使用改变后的数据对其进行替换
+          function replaceNode(data, parentItem) {
+            return update(data, {
+              $apply: (arr) =>
+                arr.map((item) => {
+                  // 找到需要替换的 item 并替换为新数据
+                  if (item.id === parentItem.id) {
+                    return newParentItem;
+                  }
 
-          // 递归 data, 找到 data 中和 parentItem.id 相同的项
-          // 然后使用交换过数据的 parentItem 对其进行替换
-          function digui(data, parentItem) {
-            for (let i = 0; i < data.length; i++) {
-              const item = data[i];
-              if (item.id === parentItem.id) {
-                data[i] = newParentItem;
-                return;
-              } else {
-                digui(item?.children || [], parentItem);
-              }
-            }
+                  // 递归，处理可能存在的子级
+                  if (item.children) {
+                    return update(item, {
+                      children: {
+                        $apply: (subArr) => replaceNode(subArr, parentItem),
+                      },
+                    });
+                  }
+
+                  return item;
+                }),
+            });
           }
-          digui(newData, newParentItem);
+
+          newData = replaceNode(data, newParentItem);
         }
       }
 
-      setData([...newData]);
+      setData(newData);
     },
     [data]
   );
